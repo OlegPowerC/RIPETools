@@ -3,10 +3,10 @@ package RIPEtools
 import "testing"
 
 func TestGetCountry(t *testing.T) {
-	var rd RIPEd
-	ergd := rd.GetData("8.8.8.8")
-	if ergd != nil {
-		t.Errorf("GetData error: %s", ergd)
+
+	rd, rderr := NewRIPEreq("8.8.8.8")
+	if rderr != nil {
+		t.Errorf("Get error: %s", rderr)
 	}
 	er, cn := rd.GetCountry()
 	if er != nil {

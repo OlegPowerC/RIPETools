@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	valaddr "github.com/OlegPowerC/validate_ipaddresses"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -80,7 +81,7 @@ func (rd *RIPEd) GetOriginAs() (err error, OriginAs uint) {
 	return nil, uint(asnumm)
 }
 
-func (rd *RIPEd) GetData(Ipaddr string) (err error) {
+func (rd *RIPEd) getData(Ipaddr string) (err error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -104,7 +105,9 @@ func (rd *RIPEd) GetData(Ipaddr string) (err error) {
 		}
 		var OwerallJson map[string]json.RawMessage
 		UmErr := json.Unmarshal(bodyBytes, &OwerallJson)
-		fmt.Println(UmErr)
+		if UmErr != nil {
+			return UmErr
+		}
 		for key, val := range OwerallJson {
 			if key == "data" {
 				var DataJm ripeData
@@ -117,4 +120,15 @@ func (rd *RIPEd) GetData(Ipaddr string) (err error) {
 		}
 	}
 	return nil
+}
+
+func NewRIPEreq(ipaddr string) (rd *RIPEd, err error) {
+	if chiperr := valaddr.CheckSingleIp(ipaddr); chiperr != nil {
+		return nil, chiperr
+	}
+	var rdret RIPEd
+	if gdataerr := rdret.getData(ipaddr); gdataerr != nil {
+		return nil, err
+	}
+	return &rdret, nil
 }
